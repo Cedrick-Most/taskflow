@@ -1,9 +1,12 @@
+
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.http import JsonResponse
+from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -15,7 +18,9 @@ User = get_user_model()
 
 @ensure_csrf_cookie
 def csrf_cookie(request):
-    return JsonResponse({'message': 'CSRF cookie set'})
+    return JsonResponse({
+        'csrfToken': get_token(request)
+    })
 
 
 @api_view(['POST'])
@@ -58,7 +63,10 @@ def register_user(request):
     login(request, user)
 
     return Response(
-        {'id': user.id, 'username': user.username},
+        {
+            'id': user.id,
+            'username': user.username,
+        },
         status=status.HTTP_201_CREATED,
     )
 
@@ -93,7 +101,10 @@ def login_user(request):
 @permission_classes([IsAuthenticated])
 def logout_user(request):
     logout(request)
-    return Response({'message': 'Logged out successfully.'})
+
+    return Response({
+        'message': 'Logged out successfully.'
+    })
 
 
 @api_view(['GET'])

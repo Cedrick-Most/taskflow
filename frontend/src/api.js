@@ -1,16 +1,5 @@
-function getCookie(name) {
-  for (const cookie of document.cookie.split(';')) {
-    const trimmed = cookie.trim()
 
-    if (trimmed.startsWith(`${name}=`)) {
-      return decodeURIComponent(
-        trimmed.substring(name.length + 1)
-      )
-    }
-  }
-
-  return ''
-}
+let csrfToken = ''
 
 export async function prepareCsrf() {
   const response = await fetch('/api/accounts/csrf/', {
@@ -20,25 +9,28 @@ export async function prepareCsrf() {
   if (!response.ok) {
     throw new Error('Could not initialize security settings.')
   }
+
+  const data = await response.json()
+  csrfToken = data.csrfToken
+
+  if (!csrfToken) {
+    throw new Error('Could not obtain CSRF token.')
+  }
 }
 
 export async function apiRequest(url, options = {}) {
   const method = (options.method || 'GET').toUpperCase()
   const changingData = !['GET', 'HEAD', 'OPTIONS'].includes(method)
 
+  if (changingData && !csrfToken) {
+    await prepareCsrf()
+  }
+
   const headers = {
     ...options.headers,
   }
 
   if (changingData) {
-    const csrfToken = getCookie('csrftoken')
-
-    if (!csrfToken) {
-      throw new Error(
-        'CSRF token is missing. Please refresh the page and try again.'
-      )
-    }
-
     headers['X-CSRFToken'] = csrfToken
   }
 
