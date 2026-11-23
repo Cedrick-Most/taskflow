@@ -185,3 +185,20 @@ CSRF_COOKIE_SECURE = not DEBUG
 # Use HTTPS in production
 SECURE_SSL_REDIRECT = not DEBUG
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+# Print Django server errors in Render logs
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
