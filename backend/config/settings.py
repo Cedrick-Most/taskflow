@@ -173,6 +173,7 @@ REST_FRAMEWORK = {
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
+    'https://taskflow-eight-psi-86.vercel.app',
 ]
 # Trust HTTPS forwarded by the hosting platform
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
