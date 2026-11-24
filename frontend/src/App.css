@@ -1,3 +1,4 @@
+
 .app {
   min-height: 100vh;
 }
@@ -91,6 +92,7 @@ input[type="text"],
 input[type="password"],
 textarea {
   width: 100%;
+  box-sizing: border-box;
   padding: 13px 15px;
   border: 1px solid #d4daea;
   border-radius: 9px;
@@ -142,6 +144,7 @@ textarea:focus {
   margin-top: 5px;
   accent-color: #344fa6;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .task-content {
@@ -165,14 +168,102 @@ textarea:focus {
   color: #8993a5;
 }
 
-.delete-button {
+/* Task action buttons */
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.edit-button,
+.delete-button,
+.save-button,
+.cancel-button {
   border: none;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.edit-button {
+  background: #e8edff;
+  color: #344fa6;
+}
+
+.edit-button:hover {
+  background: #d5dfff;
+}
+
+.delete-button {
   background: #fff0f0;
   color: #b42332;
-  border-radius: 8px;
-  padding: 9px 13px;
-  cursor: pointer;
 }
+
+.delete-button:hover {
+  background: #ffdcdc;
+}
+
+.save-button {
+  background: #344fa6;
+  color: white;
+}
+
+.save-button:hover {
+  background: #263d88;
+}
+
+.cancel-button {
+  background: #e9ecef;
+  color: #475569;
+}
+
+.cancel-button:hover {
+  background: #dce1e7;
+}
+
+/* Task editing form */
+
+.edit-form {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f8f9fd;
+  border: 1px solid #d4daea;
+  border-radius: 12px;
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.edit-form input,
+.edit-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  text-decoration: none;
+  background: white;
+}
+
+.edit-form label {
+  text-decoration: none;
+  color: #243b80;
+}
+
+.edit-form textarea {
+  resize: vertical;
+}
+
+.edit-form .task-actions {
+  margin-top: 5px;
+}
+
+/* Error and empty messages */
 
 .error {
   color: #b42332;
@@ -194,6 +285,8 @@ textarea:focus {
   font-size: 13px;
 }
 
+/* Mobile responsive design */
+
 @media (max-width: 550px) {
   .summary {
     gap: 8px;
@@ -213,5 +306,26 @@ textarea:focus {
 
   .task {
     flex-wrap: wrap;
+  }
+
+  .task-content {
+    flex: 1;
+  }
+
+  .task-actions {
+    gap: 8px;
+  }
+
+  .edit-form {
+    padding: 12px;
+  }
+
+  .edit-form .task-actions {
+    width: 100%;
+  }
+
+  .save-button,
+  .cancel-button {
+    flex: 1;
   }
 }

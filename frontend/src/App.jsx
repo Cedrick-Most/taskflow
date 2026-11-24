@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react'
 import { apiRequest, prepareCsrf } from './api'
 import './App.css'
@@ -12,6 +13,10 @@ function App() {
   const [description, setDescription] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+
+  const [editingId, setEditingId] = useState(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editDescription, setEditDescription] = useState('')
 
   async function loadTasks() {
     const data = await apiRequest('/api/tasks/')
@@ -77,6 +82,9 @@ function App() {
 
       setUser(null)
       setTasks([])
+      setTitle('')
+      setDescription('')
+      cancelEditing()
       await prepareCsrf()
     } catch (err) {
       setError(err.message)
@@ -105,6 +113,48 @@ function App() {
 
       setTitle('')
       setDescription('')
+      await loadTasks()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  function startEditing(task) {
+    setError('')
+    setEditingId(task.id)
+    setEditTitle(task.title)
+    setEditDescription(task.description || '')
+  }
+
+  function cancelEditing() {
+    setEditingId(null)
+    setEditTitle('')
+    setEditDescription('')
+  }
+
+  async function saveTask(event, id) {
+    event.preventDefault()
+
+    if (!editTitle.trim()) {
+      setError('Task title is required.')
+      return
+    }
+
+    try {
+      setError('')
+
+      await apiRequest(`/api/tasks/${id}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: editTitle.trim(),
+          description: editDescription.trim(),
+        }),
+      })
+
+      cancelEditing()
       await loadTasks()
     } catch (err) {
       setError(err.message)
@@ -140,6 +190,10 @@ function App() {
       await apiRequest(`/api/tasks/${id}/`, {
         method: 'DELETE',
       })
+
+      if (editingId === id) {
+        cancelEditing()
+      }
 
       await loadTasks()
     } catch (err) {
@@ -317,26 +371,92 @@ function App() {
                     task.completed ? 'done' : ''
                   }`}
                 >
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    onChange={() => toggleTask(task)}
-                  />
+                  {editingId === task.id ? (
+                    <form
+                      className="edit-form"
+                      onSubmit={(event) =>
+                        saveTask(event, task.id)
+                      }
+                    >
+                      <label htmlFor={`edit-title-${task.id}`}>
+                        Edit task title
+                      </label>
 
-                  <div className="task-content">
-                    <h3>{task.title}</h3>
-                    {task.description && (
-                      <p>{task.description}</p>
-                    )}
-                  </div>
+                      <input
+                        id={`edit-title-${task.id}`}
+                        type="text"
+                        value={editTitle}
+                        onChange={(event) =>
+                          setEditTitle(event.target.value)
+                        }
+                        required
+                        autoFocus
+                      />
 
-                  <button
-                    type="button"
-                    className="delete-button"
-                    onClick={() => deleteTask(task.id)}
-                  >
-                    Delete
-                  </button>
+                      <label htmlFor={`edit-description-${task.id}`}>
+                        Edit description
+                      </label>
+
+                      <textarea
+                        id={`edit-description-${task.id}`}
+                        value={editDescription}
+                        onChange={(event) =>
+                          setEditDescription(event.target.value)
+                        }
+                        rows={3}
+                      />
+
+                      <div className="task-actions">
+                        <button
+                          type="submit"
+                          className="save-button"
+                        >
+                          Save Changes
+                        </button>
+
+                        <button
+                          type="button"
+                          className="cancel-button"
+                          onClick={cancelEditing}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <input
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={() => toggleTask(task)}
+                      />
+
+                      <div className="task-content">
+                        <h3>{task.title}</h3>
+                        {task.description && (
+                          <p>{task.description}</p>
+                        )}
+                      </div>
+
+                      <div className="task-actions">
+                        <button
+                          type="button"
+                          className="edit-button"
+                          onClick={() => startEditing(task)}
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          className="delete-button"
+                          onClick={() => deleteTask(task.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
